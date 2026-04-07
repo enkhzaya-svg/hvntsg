@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Борлуулалтын Систем & Интерактив Тооцоолуур</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #1e293b; }
+        .chart-container { position: relative; width: 100%; max-width: 800px; margin: auto; height: 400px; }
+        .mini-chart { position: relative; width: 100%; max-width: 400px; margin: auto; height: 300px; }
+        .card-shadow { box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05); }
+        
+        /* Custom Switch */
+        .switch { position: relative; display: inline-block; width: 60px; height: 34px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e1; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: #4f46e5; }
+        input:checked + .slider:before { transform: translateX(26px); }
+
+        .step-node { position: relative; padding-left: 2.5rem; margin-bottom: 1.5rem; }
+        .step-node::before { content: ''; position: absolute; left: 0.7rem; top: 1.5rem; bottom: -1.5rem; width: 2px; background-color: #e2e8f0; }
+        .step-node:last-child::before { display: none; }
+    </style>
+    <!-- Chosen Palette: Indigo-Blue (Funnel), Emerald (Success), Slate (Neutral) -->
+    <!-- Application Structure Plan:
+         1. Hero & Interactive Calculator: Leads input updates the main Bar Funnel Chart.
+         2. Main Funnel Chart: Real-time update of stages from First Call to Close.
+         3. Workload Comparison: Toggle for Manual vs. Automated schedule (Including Training & Retention).
+         4. Full Automation Masterplan: Steps for Sales, Product Training, and Customer Care.
+         5. Software Stack: Essential tools.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</head>
+<body>
+
+    <nav class="bg-white border-b border-slate-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2 font-black text-xl text-indigo-600">
+                <span>📊</span> SalesSystem.io
+            </div>
+            <div class="hidden md:flex gap-6 text-sm font-semibold text-slate-500">
+                <a href="#calculator" class="hover:text-indigo-600">Тооцоолуур</a>
+                <a href="#workload" class="hover:text-indigo-600">Ачаалал</a>
+                <a href="#automation" class="hover:text-indigo-600">Автоматжуулалт</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-6xl mx-auto px-4 py-12 space-y-24">
+
+        <!-- SECTION 1: CALCULATOR & FUNNEL CHART -->
+        <section id="calculator" class="space-y-10">
+            <div class="text-center space-y-4">
+                <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight">
+                    Борлуулалтын <span class="text-indigo-600">Интерактив Тооцоолуур</span>
+                </h1>
+                <p class="text-slate-500 text-lg max-w-2xl mx-auto">
+                    Lead-ийн тоогоо оруулаад борлуулалтын задралыг бодитоор харна уу.
+                </p>
+            </div>
+
+            <div class="bg-white p-8 rounded-[2.5rem] border border-slate-200 card-shadow space-y-10">
+                <div class="flex flex-col md:flex-row gap-8 items-center justify-center">
+                    <div class="w-full md:w-1/3 space-y-4">
+                        <label class="block text-sm font-bold text-slate-700">7 хоногт ирэх Lead-ийн тоо:</label>
+                        <input type="number" id="leadsInput" value="150" oninput="updateFunnel()" class="w-full text-4xl font-black p-4 bg-indigo-50 border border-indigo-200 rounded-2xl outline-none focus:ring-4 focus:ring-indigo-100 text-indigo-600 transition-all">
+                        <div class="p-4 bg-slate-50 rounded-xl text-xs text-slate-500">
+                            * Суурь тооцоолол: 150 -> 120 -> 60 -> 25 -> 10 -> 6
+                        </div>
+                    </div>
+                    
+                    <div class="w-full md:w-2/3 grid grid-cols-2 sm:grid-cols-3 gap-4">
+                        <div class="p-4 bg-slate-50 rounded-2xl text-center">
+                            <div class="text-xs font-bold text-slate-400 uppercase">Demo Sent</div>
+                            <div id="valDemo" class="text-2xl font-black text-slate-700">120</div>
+                        </div>
+                        <div class="p-4 bg-slate-50 rounded-2xl text-center">
+                            <div class="text-xs font-bold text-slate-400 uppercase">Meet</div>
+                            <div id="valMeet" class="text-2xl font-black text-indigo-600">25</div>
+                        </div>
+                        <div class="p-4 bg-emerald-50 rounded-2xl text-center border border-emerald-100">
+                            <div class="text-xs font-bold text-emerald-600 uppercase">Close</div>
+                            <div id="valClose" class="text-2xl font-black text-emerald-600">6</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <canvas id="funnelChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: WORKLOAD COMPARISON (THE SWITCH) -->
+        <section id="workload" class="bg-white p-10 rounded-[2.5rem] border border-slate-200 card-shadow">
+            <div class="flex flex-col md:flex-row md:items-center justify-between mb-12 gap-6">
+                <div>
+                    <h2 class="text-3xl font-bold">Цаг зарцуулалтын харьцуулалт</h2>
+                    <p class="text-slate-500 mt-2 italic text-sm">Нэг бүрчлэн сургалт орох болон системээр ажиллахын ялгаа.</p>
+                </div>
+                
+                <div class="bg-slate-100 p-2 rounded-2xl flex items-center gap-4">
+                    <span class="text-sm font-bold text-slate-400" id="labelManual">Гараар</span>
+                    <label class="switch">
+                        <input type="checkbox" id="workloadToggle" onchange="toggleWorkload()">
+                        <span class="slider"></span>
+                    </label>
+                    <span class="text-sm font-bold text-indigo-600" id="labelSystem">Автомат</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                <div class="mini-chart">
+                    <canvas id="workloadChart"></canvas>
+                </div>
+                <div class="space-y-4" id="workloadInfo">
+                    <!-- Dynamic Info -->
+                </div>
+            </div>
+            
+            <div id="summaryBox" class="mt-10 p-6 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-start gap-4">
+                <div class="text-2xl" id="summaryEmoji">🚀</div>
+                <p id="summaryText" class="text-sm text-indigo-900 leading-relaxed italic">
+                    <!-- Dynamic Summary -->
+                </p>
+            </div>
+        </section>
+
+        <!-- SECTION 3: AUTOMATION MASTERPLAN -->
+        <section id="automation" class="space-y-12">
+            <div class="text-center">
+                <h2 class="text-4xl font-black mb-4">Борлуулалт & Халамжийн Систем</h2>
+                <p class="text-slate-500 max-w-2xl mx-auto">Яаж 3 ажилтан 150 лийдийг алдалгүй "арчлах" вэ?</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Sales Funnel -->
+                <div class="bg-white p-8 rounded-3xl border border-slate-200 card-shadow flex flex-col">
+                    <h3 class="text-xl font-bold text-indigo-600 mb-6 flex items-center gap-2">
+                        <span>🔥</span> Шинэ Борлуулалт
+                    </h3>
+                    <div class="flex-grow space-y-1">
+                        <div class="step-node">
+                            <h4 class="font-bold text-sm">Lead Capture</h4>
+                            <p class="text-[11px] text-slate-500">HubSpot Форм -> Zapier</p>
+                        </div>
+                        <div class="step-node">
+                            <h4 class="font-bold text-sm">Instant Demo</h4>
+                            <p class="text-[11px] text-slate-500">Бүртгүүлмэгц мэйлээр видео очно.</p>
+                        </div>
+                        <div class="step-node">
+                            <h4 class="font-bold text-sm">Auto-Booking</h4>
+                            <p class="text-[11px] text-slate-500">Calendly-ээр цаг товлоно.</p>
+                        </div>
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-slate-100 text-[10px] font-bold text-indigo-400 uppercase tracking-widest">
+                        Tools: HubSpot + Calendly
+                    </div>
+                </div>
+
+                <!-- Product Training -->
+                <div class="bg-white p-8 rounded-3xl border border-slate-200 card-shadow flex flex-col">
+                    <h3 class="text-xl font-bold text-amber-500 mb-6 flex items-center gap-2">
+                        <span>🎓</span> Сургалт (Onboarding)
+                    </h3>
+                    <div class="flex-grow space-y-1">
+                        <div class="step-node">
+                            <h4 class="font-bold text-sm">Video Walkthrough</h4>
+                            <p class="text-[11px] text-slate-500">Програм танилцуулах Loom бичлэгүүд.</p>
+                        </div>
+                        <div class="step-node">
+                            <h4 class="font-bold text-sm">AI Chatbot Support</h4>
+                            <p class="text-[11px] text-slate-500">Чатбот таны өмнөөс заавар өгнө.</p>
+                        </div>
+                        <div class="step-node">
+                            <h4 class="font-bold text-sm">Self-Serve Knowledge</h4>
+                            <p class="text-[11px] text-slate-500">Notion дээрх бүрэн зааварчилгаа.</p>
+                        </div>
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-slate-100 text-[10px] font-bold text-amber-400 uppercase tracking-widest">
+                        Tools: Intercom + Loom + Notion
+                    </div>
+                </div>
+
+                <!-- Retention & Care -->
+                <div class="bg-white p-8 rounded-3xl border border-slate-200 card-shadow flex flex-col">
+                    <h3 class="text-xl font-bold text-emerald-500 mb-6 flex items-center gap-2">
+                        <span>🛡️</span> Төлөвшил (Retention)
+                    </h3>
+                    <div class="flex-grow space-y-1">
+                        <div class="step-node">
+                            <h4 class="font-bold text-sm">Lifecycle Automation</h4>
+                            <p class="text-[11px] text-slate-500">30 хоног тутамд "Халамж" мэйл.</p>
+                        </div>
+                        <div class="step-node">
+                            <h4 class="font-bold text-sm">Inactivity Alerts</h4>
+                            <p class="text-[11px] text-slate-500">Ашиглаагүй харилцагчид сануулга явуулах.</p>
+                        </div>
+                        <div class="step-node">
+                            <h4 class="font-bold text-sm">Success Consulting</h4>
+                            <p class="text-[11px] text-slate-500">Дата дээр үндэслэж зөвлөгөө өгөх.</p>
+                        </div>
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-slate-100 text-[10px] font-bold text-emerald-400 uppercase tracking-widest">
+                        Tools: HubSpot CRM + Make.com
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="py-12 text-center text-slate-400 text-sm border-t border-slate-200 bg-white">
+        © 2024 Advanced Sales Automation Strategy Dashboard
+    </footer>
+
+    <script>
+        // Funnel Logic
+        const ratios = {
+            demo: 0.8,
+            test: 0.5, // 50% of demos test it
+            meet: 0.42, // roughly matches 25 from 60
+            prop: 0.4, // roughly matches 10 from 25
+            close: 0.6 // roughly matches 6 from 10
+        };
+
+        let funnelChart;
+        let workloadChart;
+
+        function updateFunnel() {
+            const leads = parseInt(document.getElementById('leadsInput').value) || 0;
+            
+            const demos = Math.round(leads * ratios.demo);
+            const tests = Math.round(demos * ratios.test);
+            const meets = Math.round(tests * ratios.meet);
+            const props = Math.round(meets * ratios.prop);
+            const closes = Math.round(props * ratios.close);
+
+            // Update Labels
+            document.getElementById('valDemo').innerText = demos;
+            document.getElementById('valMeet').innerText = meets;
+            document.getElementById('valClose').innerText = closes;
+
+            // Update Chart
+            funnelChart.data.datasets[0].data = [leads, demos, tests, meets, props, closes];
+            funnelChart.update();
+        }
+
+        const workloadData = {
+            manual: {
+                labels: ['Нэг бүрчлэн сургах', 'Давтагдсан асуулт/Чат', 'Халамж/Retention залгах', 'Шинэ уулзалт хийх', 'Сул цаг'],
+                values: [40, 25, 20, 10, 5],
+                colors: ['#f59e0b', '#fbbf24', '#10b981', '#6366f1', '#f1f5f9'],
+                info: [
+                    { title: "🎓 Нэг бүрчлэн сургах (40%)", desc: "Шинэ хүн бүрт програмын цэс, товчлуур нэг бүрийг тайлбарлаж цагаа үрж байна." },
+                    { title: "📞 Халамж/Retention (20%)", desc: "Хуучин хэрэглэгч рүүгээ нэг бүрчлэн залгаж сануулах, ярих." },
+                    { title: "🤝 Уулзалт (10%)", desc: "Хамгийн чухалClosing хийх цаг ерөөсөө 10% л байна." }
+                ],
+                summary: "❌ <strong>ЭРСДЭЛ:</strong> Танай баг борлуулалт биш 'багш'-ийн ажил хийж байна. Ингэвэл 150 lead-ийг алдах магадлал маш өндөр.",
+                emoji: "⚠️"
+            },
+            auto: {
+                labels: ['Closing (High Value)', 'Датад суурилсан зөвлөгөө', 'Автомат сургалтын хяналт', 'Автомат халамжийн хяналт', 'Сул цаг (Scalability)'],
+                values: [45, 20, 5, 5, 25],
+                colors: ['#6366f1', '#4f46e5', '#f59e0b', '#10b981', '#f1f5f9'],
+                info: [
+                    { title: "🚀 Closing Focus (45%)", desc: "Бүх сургалт автоматаар явсан тул та зөвхөн гэрээ зурах уулзалтад төвлөрнө." },
+                    { title: "🛡️ Автомат халамж (5%)", desc: "Чатбот болон автомат мэйлүүд харилцагчийг төлөвшүүлж байдаг." },
+                    { title: "📊 Дата зөвлөгөө (20%)", desc: "Хэрэглэгчид хэрхэн илүү үр дүнтэй ажиллах талаар стратегийн зөвлөгөө өгнө." }
+                ],
+                summary: "✅ <strong>ДАВУУ ТАЛ:</strong> Програм өөрөө сургалтаа хийдэг тул борлуулалтын ажилтны бүтээмж 3-5 дахин өснө.",
+                emoji: "🚀"
+            }
+        };
+
+        function toggleWorkload() {
+            const isAuto = document.getElementById('workloadToggle').checked;
+            const mode = isAuto ? 'auto' : 'manual';
+            
+            document.getElementById('labelManual').className = isAuto ? "text-sm font-bold text-slate-400" : "text-sm font-bold text-rose-600";
+            document.getElementById('labelSystem').className = isAuto ? "text-sm font-bold text-indigo-600" : "text-sm font-bold text-slate-400";
+
+            workloadChart.data.labels = workloadData[mode].labels;
+            workloadChart.data.datasets[0].data = workloadData[mode].values;
+            workloadChart.data.datasets[0].backgroundColor = workloadData[mode].colors;
+            workloadChart.update();
+
+            updateInfo(mode);
+        }
+
+        function updateInfo(mode) {
+            const infoBox = document.getElementById('workloadInfo');
+            const sumBox = document.getElementById('summaryBox');
+            const sumText = document.getElementById('summaryText');
+            const sumEmoji = document.getElementById('summaryEmoji');
+
+            infoBox.innerHTML = workloadData[mode].info.map(i => `
+                <div class="p-4 bg-slate-50 rounded-xl border border-slate-100 card-shadow transition-all hover:translate-x-1">
+                    <h5 class="font-bold text-sm text-slate-900">${i.title}</h5>
+                    <p class="text-[11px] text-slate-500 mt-1 leading-relaxed">${i.desc}</p>
+                </div>
+            `).join('');
+
+            sumText.innerHTML = workloadData[mode].summary;
+            sumEmoji.innerText = workloadData[mode].emoji;
+            sumBox.className = `mt-10 p-6 rounded-2xl border flex items-start gap-4 transition-all duration-300 ${mode === 'auto' ? 'bg-indigo-50 border-indigo-100' : 'bg-amber-50 border-amber-100'}`;
+        }
+
+        window.onload = function() {
+            // Main Funnel Chart
+            const ctx1 = document.getElementById('funnelChart').getContext('2d');
+            funnelChart = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: ['First Call', 'Demo Sent', 'Demo Tested', 'Meet', 'Proposal', 'Close'],
+                    datasets: [{
+                        label: 'Хүмүүсийн тоо',
+                        data: [150, 120, 60, 25, 10, 6],
+                        backgroundColor: [
+                            '#c7d2fe', // light indigo
+                            '#a5b4fc',
+                            '#818cf8',
+                            '#6366f1',
+                            '#4f46e5',
+                            '#3730a3'  // dark indigo
+                        ],
+                        borderRadius: 12,
+                        barThickness: 60
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#1e293b',
+                            padding: 12,
+                            titleFont: { size: 14, weight: 'bold' },
+                            callbacks: {
+                                label: function(context) { return " Хүмүүсийн тоо: " + context.raw; }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, grid: { display: false }, ticks: { font: { size: 11 } } },
+                        x: { grid: { display: false }, ticks: { font: { size: 12, weight: 'bold' } } }
+                    }
+                }
+            });
+
+            // Workload Doughnut
+            const ctx2 = document.getElementById('workloadChart').getContext('2d');
+            workloadChart = new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: workloadData.manual.labels,
+                    datasets: [{
+                        data: workloadData.manual.values,
+                        backgroundColor: workloadData.manual.colors,
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '75%',
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            updateInfo('manual');
+            updateFunnel();
+        };
+    </script>
+</body>
+</html>
