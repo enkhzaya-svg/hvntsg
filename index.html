@@ -3,379 +3,546 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Борлуулалтын Систем & Интерактив Тооцоолуур</title>
+    <title>TUSS: Борлуулалтын Төгс Аналитик & Төлөвлөгч</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #1e293b; }
-        .chart-container { position: relative; width: 100%; max-width: 800px; margin: auto; height: 400px; }
-        .mini-chart { position: relative; width: 100%; max-width: 400px; margin: auto; height: 300px; }
-        .card-shadow { box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05); }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
         
-        /* Custom Switch */
-        .switch { position: relative; display: inline-block; width: 60px; height: 34px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e1; transition: .4s; border-radius: 34px; }
-        .slider:before { position: absolute; content: ""; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: #4f46e5; }
-        input:checked + .slider:before { transform: translateX(26px); }
+        :root {
+            --brand-dark: #0f172a;
+            --brand-blue: #2563eb;
+            --brand-green: #10b981;
+            --brand-red: #ef4444;
+            --brand-amber: #f59e0b;
+        }
 
-        .step-node { position: relative; padding-left: 2.5rem; margin-bottom: 1.5rem; }
-        .step-node::before { content: ''; position: absolute; left: 0.7rem; top: 1.5rem; bottom: -1.5rem; width: 2px; background-color: #e2e8f0; }
-        .step-node:last-child::before { display: none; }
+        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; color: #1e293b; -webkit-font-smoothing: antialiased; }
+        
+        .glass-panel { background: white; border: 1px solid #e2e8f0; border-radius: 1.5rem; box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05); padding: 1.5rem; }
+        .chart-container { position: relative; width: 100%; height: 350px; }
+        
+        .section-title { font-size: 1.1rem; font-weight: 900; color: var(--brand-dark); text-transform: uppercase; letter-spacing: -0.02em; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.5rem; }
+        .label-sm { font-size: 0.65rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.3rem; display: block; }
+        
+        .input-pro { width: 100%; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 0.5rem; padding: 0.6rem 0.75rem; font-size: 0.9rem; font-weight: 700; color: #0f172a; transition: all 0.2s; }
+        .input-pro:focus { background: white; border-color: var(--brand-blue); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15); outline: none; }
+        
+        .slider-mix { -webkit-appearance: none; width: 100%; height: 8px; background: #e2e8f0; border-radius: 4px; outline: none; }
+        .slider-mix::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 20px; height: 20px; border-radius: 50%; cursor: pointer; border: 3px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: transform 0.1s; }
+        .slider-mix::-webkit-slider-thumb:hover { transform: scale(1.15); }
+        .slider-mix.c1::-webkit-slider-thumb { background: #3b82f6; }
+        .slider-mix.c2::-webkit-slider-thumb { background: #8b5cf6; }
+        .slider-mix.c3::-webkit-slider-thumb { background: #f59e0b; }
+        .slider-mix.c4::-webkit-slider-thumb { background: #10b981; }
+
+        .kpi-card { background: white; border: 1px solid #e2e8f0; border-radius: 1rem; padding: 1.25rem; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.3s ease; border-top: 4px solid transparent; }
+        .kpi-card:hover { transform: translateY(-4px); box-shadow: 0 12px 25px -5px rgba(0,0,0,0.1); }
+        
+        /* Bottleneck Flow UI */
+        .flow-container { display: flex; flex-direction: column; gap: 0.5rem; overflow-x: auto; padding-bottom: 1rem; }
+        @media (min-width: 1024px) { .flow-container { flex-direction: row; align-items: stretch; justify-content: space-between; } }
+        .flow-stage { flex: 1; background: white; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 1rem; text-align: center; position: relative; min-width: 110px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); z-index: 2;}
+        .flow-arrow { flex: 0.4; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; min-width: 60px; padding: 1rem 0; }
+        .flow-line { width: 2px; height: 100%; background: #cbd5e1; position: absolute; z-index: 1; }
+        @media (min-width: 1024px) { .flow-line { width: 100%; height: 3px; top: 40%; transform: translateY(-50%); } }
+        .flow-conv { position: relative; z-index: 10; padding: 0.25rem 0.6rem; border-radius: 1rem; font-size: 0.7rem; font-weight: 900; border: 3px solid white; background: #f8fafc; }
+        .flow-pulse { animation: pulse-red 2s infinite; border-color: #fca5a5; color: #e11d48; background: #fee2e2; }
+        .flow-ok { border-color: #a7f3d0; color: #059669; background: #d1fae5; }
+        
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+            70% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+        
+        .growth-up { color: #10b981; font-weight: 700; }
+        .growth-down { color: #ef4444; font-weight: 700; }
+        .target-tag { position: absolute; top: 12px; right: 20px; color: #94a3b8; font-size: 10px; font-weight: 800; text-transform: uppercase; }
+
+        .tooltip { position: relative; display: inline-block; cursor: help; border-bottom: 1px dashed #cbd5e1; }
+        .tooltip .tooltiptext { visibility: hidden; width: 220px; background-color: #1e293b; color: #fff; text-align: center; border-radius: 6px; padding: 8px; position: absolute; z-index: 50; bottom: 125%; left: 50%; margin-left: -110px; opacity: 0; transition: opacity 0.3s; font-size: 0.65rem; font-weight: normal; text-transform: none; letter-spacing: normal; line-height: 1.4; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        .tooltip .tooltiptext::after { content: ""; position: absolute; top: 100%; left: 50%; margin-left: -5px; border-width: 5px; border-style: solid; border-color: #1e293b transparent transparent transparent; }
+        .tooltip:hover .tooltiptext { visibility: visible; opacity: 1; }
     </style>
-    <!-- Chosen Palette: Indigo-Blue (Funnel), Emerald (Success), Slate (Neutral) -->
-    <!-- Application Structure Plan:
-         1. Hero & Interactive Calculator: Leads input updates the main Bar Funnel Chart.
-         2. Main Funnel Chart: Real-time update of stages from First Call to Close.
-         3. Workload Comparison: Toggle for Manual vs. Automated schedule (Including Training & Retention).
-         4. Full Automation Masterplan: Steps for Sales, Product Training, and Customer Care.
-         5. Software Stack: Essential tools.
-    -->
-    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
 </head>
-<body>
+<body class="pb-24">
 
-    <nav class="bg-white border-b border-slate-200 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-            <div class="flex items-center gap-2 font-black text-xl text-indigo-600">
-                <span>📊</span> SalesSystem.io
+    <!-- Navbar -->
+    <nav class="bg-[#0b1120] text-white sticky top-0 z-50 border-b border-slate-800">
+        <div class="max-w-[1400px] mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <span class="text-2xl font-black italic tracking-tighter text-blue-500">TUSS</span>
+                <span class="h-5 w-[1px] bg-slate-700"></span>
+                <span class="text-xs font-bold uppercase tracking-widest text-slate-300 hidden sm:block">Борлуулалт & Маркетинг Аналитик</span>
             </div>
-            <div class="hidden md:flex gap-6 text-sm font-semibold text-slate-500">
-                <a href="#calculator" class="hover:text-indigo-600">Тооцоолуур</a>
-                <a href="#workload" class="hover:text-indigo-600">Ачаалал</a>
-                <a href="#automation" class="hover:text-indigo-600">Автоматжуулалт</a>
+            <div class="flex items-center gap-4">
+                <div class="hidden md:block">
+                    <span class="text-[9px] text-slate-400 uppercase font-bold block mb-0.5">Тайлангийн хугацаа</span>
+                    <input type="month" id="reportPeriod" value="2025-01" class="bg-slate-800 border-none text-white text-[10px] rounded px-2 py-1 outline-none">
+                </div>
+                <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-1.5 rounded-lg text-xs font-bold transition-all shadow-md">Тайлан Хэвлэх</button>
             </div>
         </div>
     </nav>
 
-    <main class="max-w-6xl mx-auto px-4 py-12 space-y-24">
+    <main class="max-w-[1400px] mx-auto px-4 py-8 space-y-8">
 
-        <!-- SECTION 1: CALCULATOR & FUNNEL CHART -->
-        <section id="calculator" class="space-y-10">
-            <div class="text-center space-y-4">
-                <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight">
-                    Борлуулалтын <span class="text-indigo-600">Интерактив Тооцоолуур</span>
-                </h1>
-                <p class="text-slate-500 text-lg max-w-2xl mx-auto">
-                    Lead-ийн тоогоо оруулаад борлуулалтын задралыг бодитоор харна уу.
-                </p>
-            </div>
-
-            <div class="bg-white p-8 rounded-[2.5rem] border border-slate-200 card-shadow space-y-10">
-                <div class="flex flex-col md:flex-row gap-8 items-center justify-center">
-                    <div class="w-full md:w-1/3 space-y-4">
-                        <label class="block text-sm font-bold text-slate-700">7 хоногт ирэх Lead-ийн тоо:</label>
-                        <input type="number" id="leadsInput" value="150" oninput="updateFunnel()" class="w-full text-4xl font-black p-4 bg-indigo-50 border border-indigo-200 rounded-2xl outline-none focus:ring-4 focus:ring-indigo-100 text-indigo-600 transition-all">
-                        <div class="p-4 bg-slate-50 rounded-xl text-xs text-slate-500">
-                            * Суурь тооцоолол: 150 -> 120 -> 60 -> 25 -> 10 -> 6
-                        </div>
-                    </div>
-                    
-                    <div class="w-full md:w-2/3 grid grid-cols-2 sm:grid-cols-3 gap-4">
-                        <div class="p-4 bg-slate-50 rounded-2xl text-center">
-                            <div class="text-xs font-bold text-slate-400 uppercase">Demo Sent</div>
-                            <div id="valDemo" class="text-2xl font-black text-slate-700">120</div>
-                        </div>
-                        <div class="p-4 bg-slate-50 rounded-2xl text-center">
-                            <div class="text-xs font-bold text-slate-400 uppercase">Meet</div>
-                            <div id="valMeet" class="text-2xl font-black text-indigo-600">25</div>
-                        </div>
-                        <div class="p-4 bg-emerald-50 rounded-2xl text-center border border-emerald-100">
-                            <div class="text-xs font-bold text-emerald-600 uppercase">Close</div>
-                            <div id="valClose" class="text-2xl font-black text-emerald-600">6</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="chart-container">
-                    <canvas id="funnelChart"></canvas>
-                </div>
-            </div>
-        </section>
-
-        <!-- SECTION 2: WORKLOAD COMPARISON (THE SWITCH) -->
-        <section id="workload" class="bg-white p-10 rounded-[2.5rem] border border-slate-200 card-shadow">
-            <div class="flex flex-col md:flex-row md:items-center justify-between mb-12 gap-6">
+        <!-- MODULE 1: REVENUE TARGET & PRODUCT MIX -->
+        <div class="grid grid-cols-1 xl:grid-cols-12 gap-6">
+            
+            <!-- Target Setting -->
+            <section class="xl:col-span-5 glass-panel bg-slate-900 border-slate-800 text-white flex flex-col justify-between">
                 <div>
-                    <h2 class="text-3xl font-bold">Цаг зарцуулалтын харьцуулалт</h2>
-                    <p class="text-slate-500 mt-2 italic text-sm">Нэг бүрчлэн сургалт орох болон системээр ажиллахын ялгаа.</p>
+                    <h2 class="section-title text-blue-400 mb-6"><span>🎯</span> 1. Зорилтот Орлогоо Тодорхойлох</h2>
+                    
+                    <div class="space-y-5">
+                        <div>
+                            <label class="label-sm text-slate-400">Сард олох Зорилтот Орлого (₮)</label>
+                            <input type="number" id="tRev" value="50000000" class="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-4 py-3 text-2xl font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-slate-700 transition-all" oninput="calcEngine()">
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="label-sm text-slate-400">Хэрэглэгчийн дундаж хугацаа</label>
+                                <div class="flex items-center gap-2">
+                                    <input type="number" id="tDur" value="1" class="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm font-bold text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-slate-700 transition-all" oninput="calcEngine()">
+                                    <span class="text-xs font-bold text-slate-400">Сар</span>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="label-sm text-slate-400">Маркетинг Төсөв (₮)</label>
+                                <input type="number" id="tBud" value="4800000" class="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-slate-700 transition-all" oninput="calcEngine()">
+                            </div>
+                        </div>
+
+                        <div class="pt-4 border-t border-slate-800">
+                            <label class="label-sm text-slate-400 mb-4">Борлуулах Багцын Бүтэц (Product Mix %)</label>
+                            <div class="space-y-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-20"><span class="text-xs font-bold">Starter</span><br><span class="text-[9px] text-slate-500">24,000 ₮</span></div>
+                                    <input type="range" id="mSt" min="0" max="100" value="50" class="slider-mix c1 flex-1" oninput="calcEngine()">
+                                    <div class="w-12 text-right text-xs font-bold text-blue-400" id="vSt">50%</div>
+                                    <div class="w-12 text-right text-sm font-black text-white bg-slate-800 rounded px-1" id="qSt">0</div>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <div class="w-20"><span class="text-xs font-bold">Standard</span><br><span class="text-[9px] text-slate-500">33,000 ₮</span></div>
+                                    <input type="range" id="mSd" min="0" max="100" value="30" class="slider-mix c2 flex-1" oninput="calcEngine()">
+                                    <div class="w-12 text-right text-xs font-bold text-purple-400" id="vSd">30%</div>
+                                    <div class="w-12 text-right text-sm font-black text-white bg-slate-800 rounded px-1" id="qSd">0</div>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <div class="w-20"><span class="text-xs font-bold">Premium</span><br><span class="text-[9px] text-slate-500">55,000 ₮</span></div>
+                                    <input type="range" id="mPr" min="0" max="100" value="15" class="slider-mix c3 flex-1" oninput="calcEngine()">
+                                    <div class="w-12 text-right text-xs font-bold text-amber-400" id="vPr">15%</div>
+                                    <div class="w-12 text-right text-sm font-black text-white bg-slate-800 rounded px-1" id="qPr">0</div>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <div class="w-20"><span class="text-xs font-bold">Compliance</span><br><span class="text-[9px] text-slate-500">350,000 ₮</span></div>
+                                    <input type="range" id="mCp" min="0" max="100" value="5" class="slider-mix c4 flex-1" oninput="calcEngine()">
+                                    <div class="w-12 text-right text-xs font-bold text-emerald-400" id="vCp">5%</div>
+                                    <div class="w-12 text-right text-sm font-black text-white bg-slate-800 rounded px-1" id="qCp">0</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
-                <div class="bg-slate-100 p-2 rounded-2xl flex items-center gap-4">
-                    <span class="text-sm font-bold text-slate-400" id="labelManual">Гараар</span>
-                    <label class="switch">
-                        <input type="checkbox" id="workloadToggle" onchange="toggleWorkload()">
-                        <span class="slider"></span>
+                <!-- ACTION PLAN FOR TARGET -->
+                <div class="mt-6 pt-5 border-t border-slate-700">
+                    <label class="label-sm text-blue-300 mb-3 flex items-center gap-2">
+                        <span>📋</span> Дээрх орлогод хүрэхийн тулд хийх ҮЙЛДЛИЙН ТӨЛӨВЛӨГӨӨ:
                     </label>
-                    <span class="text-sm font-bold text-indigo-600" id="labelSystem">Автомат</span>
+                    <div class="grid grid-cols-3 sm:grid-cols-6 gap-2 text-center">
+                        <div class="bg-slate-800 rounded-lg p-2 border border-slate-700">
+                            <span class="block text-[8px] text-slate-400 uppercase font-bold mb-1">Хандалт</span>
+                            <span class="text-sm font-black text-white" id="reqR">0</span>
+                        </div>
+                        <div class="bg-slate-800 rounded-lg p-2 border border-slate-700">
+                            <span class="block text-[8px] text-slate-400 uppercase font-bold mb-1">Бүртгэл</span>
+                            <span class="text-sm font-black text-white" id="reqL">0</span>
+                        </div>
+                        <div class="bg-slate-800 rounded-lg p-2 border border-slate-700">
+                            <span class="block text-[8px] text-slate-400 uppercase font-bold mb-1">Видео</span>
+                            <span class="text-sm font-black text-white" id="reqD">0</span>
+                        </div>
+                        <div class="bg-blue-900/40 rounded-lg p-2 border border-blue-500/30">
+                            <span class="block text-[8px] text-blue-300 uppercase font-bold mb-1">Уулзалт</span>
+                            <span class="text-sm font-black text-blue-400" id="reqM">0</span>
+                        </div>
+                        <div class="bg-slate-800 rounded-lg p-2 border border-slate-700">
+                            <span class="block text-[8px] text-slate-400 uppercase font-bold mb-1">Санал</span>
+                            <span class="text-sm font-black text-white" id="reqP">0</span>
+                        </div>
+                        <div class="bg-emerald-900/40 rounded-lg p-2 border border-emerald-500/30">
+                            <span class="block text-[8px] text-emerald-400 uppercase font-bold mb-1">Гэрээ</span>
+                            <span class="text-sm font-black text-emerald-400" id="reqC">0</span>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- Actual Inputs -->
+            <section class="xl:col-span-7 glass-panel border-slate-200 flex flex-col">
+                <h2 class="section-title text-slate-800 mb-6">
+                    <span>📝</span> 2. Бодит Гүйцэтгэл (Шивж оруулах)
+                </h2>
+                
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6 flex-1">
+                    <div><label class="label-sm">1. Хандалт (Reach)</label><input type="number" id="aR" value="15000" class="w-full bg-slate-100 border border-slate-300 text-slate-900 rounded-lg px-3 py-2 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" oninput="calcEngine()"></div>
+                    <div><label class="label-sm">2. Бүртгэл (Lead)</label><input type="number" id="aL" value="320" class="w-full bg-slate-100 border border-slate-300 text-slate-900 rounded-lg px-3 py-2 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" oninput="calcEngine()"></div>
+                    <div><label class="label-sm">3. Видео (Demo)</label><input type="number" id="aD" value="150" class="w-full bg-slate-100 border border-slate-300 text-slate-900 rounded-lg px-3 py-2 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" oninput="calcEngine()"></div>
+                    <div><label class="label-sm text-blue-600">4. Уулзалт (Meet)</label><input type="number" id="aM" value="95" class="w-full bg-blue-50 border border-blue-200 text-blue-900 rounded-lg px-3 py-2 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" oninput="calcEngine()"></div>
+                    <div><label class="label-sm">5. Санал (Prop)</label><input type="number" id="aP" value="70" class="w-full bg-slate-100 border border-slate-300 text-slate-900 rounded-lg px-3 py-2 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" oninput="calcEngine()"></div>
+                    <div><label class="label-sm text-emerald-600">6. Гэрээ (Close)</label><input type="number" id="aC" value="28" class="w-full bg-emerald-50 border border-emerald-300 text-emerald-900 rounded-lg px-3 py-2 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all" oninput="calcEngine()"></div>
+                </div>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-6 border-t border-slate-100">
+                    <div><label class="label-sm text-slate-500">Бодит Зардал (₮)</label><input type="number" id="aS" value="4800000" class="w-full bg-slate-100 border border-slate-300 text-slate-900 rounded-lg px-3 py-2 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" oninput="calcEngine()"></div>
+                    <div><label class="label-sm text-slate-500">Орлого (₮)</label><input type="number" id="aRev" value="25500000" class="w-full bg-slate-100 border border-slate-300 text-slate-900 rounded-lg px-3 py-2 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" oninput="calcEngine()"></div>
+                    <div><label class="label-sm text-slate-500">Төлбөртэй Хэрэглэгч</label><input type="number" id="aPaid" value="380" class="w-full bg-slate-100 border border-slate-300 text-slate-900 rounded-lg px-3 py-2 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" oninput="calcEngine()"></div>
+                    <div><label class="label-sm text-red-500 tooltip">Хаягдсан хэрэглэгч<span class="tooltiptext">Энэ сард үйлчилгээгээ цуцалсан (Churn) хэрэглэгчийн тоо</span></label><input type="number" id="aLost" value="15" class="w-full bg-red-50 border border-red-200 text-red-900 rounded-lg px-3 py-2 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-red-500 focus:bg-white transition-all" oninput="calcEngine()"></div>
                 </div>
             </div>
+        </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-                <div class="mini-chart">
-                    <canvas id="workloadChart"></canvas>
-                </div>
-                <div class="space-y-4" id="workloadInfo">
-                    <!-- Dynamic Info -->
-                </div>
+        <!-- MODULE 3: BOTTLENECK DIAGNOSTICS -->
+        <section class="glass-panel">
+            <div class="mb-6">
+                <h2 class="section-title text-slate-800 mb-1"><span class="text-xl">🔍</span> 3. Үе Шатны Алдагдал (Bottleneck)</h2>
+                <p class="text-xs text-slate-500">SaaS жишиг хөрвүүлэлтээс унаж буй шатыг <span class="text-red-500 font-bold">улаанаар анивчуулж</span> харуулна.</p>
             </div>
             
-            <div id="summaryBox" class="mt-10 p-6 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-start gap-4">
-                <div class="text-2xl" id="summaryEmoji">🚀</div>
-                <p id="summaryText" class="text-sm text-indigo-900 leading-relaxed italic">
-                    <!-- Dynamic Summary -->
-                </p>
+            <div class="flow-container pb-4">
+                <div class="flow-stage"><div class="label-sm">Хандалт</div><div class="text-2xl font-black text-slate-800" id="fR">0</div></div>
+                <div class="flow-arrow"><div class="flow-line"></div><div class="flow-conv tooltip" id="fC1">0%<span class="tooltiptext" id="ft1">Target: 2.5%</span></div></div>
+                
+                <div class="flow-stage"><div class="label-sm">Бүртгэл</div><div class="text-2xl font-black text-slate-800" id="fL">0</div></div>
+                <div class="flow-arrow"><div class="flow-line"></div><div class="flow-conv tooltip" id="fC2">0%<span class="tooltiptext" id="ft2">Target: 50%</span></div></div>
+                
+                <div class="flow-stage"><div class="label-sm">Видео</div><div class="text-2xl font-black text-slate-800" id="fD">0</div></div>
+                <div class="flow-arrow"><div class="flow-line"></div><div class="flow-conv tooltip" id="fC3">0%<span class="tooltiptext" id="ft3">Target: 40%</span></div></div>
+                
+                <div class="flow-stage border-blue-200 bg-blue-50/50"><div class="label-sm text-blue-600">Уулзалт</div><div class="text-2xl font-black text-blue-800" id="fM">0</div></div>
+                <div class="flow-arrow"><div class="flow-line"></div><div class="flow-conv tooltip" id="fC4">0%<span class="tooltiptext" id="ft4">Target: 60%</span></div></div>
+                
+                <div class="flow-stage"><div class="label-sm">Санал</div><div class="text-2xl font-black text-slate-800" id="fP">0</div></div>
+                <div class="flow-arrow"><div class="flow-line"></div><div class="flow-conv tooltip" id="fC5">0%<span class="tooltiptext" id="ft5">Target: 30%</span></div></div>
+                
+                <div class="flow-stage border-emerald-200 bg-emerald-50"><div class="label-sm text-emerald-600">Гэрээ</div><div class="text-2xl font-black text-emerald-800" id="fC">0</div></div>
+            </div>
+
+            <!-- Actionable Advice Box (Lists all bottlenecks) -->
+            <div id="adviceBox" class="mt-6 p-5 rounded-xl bg-slate-900 border border-slate-800 text-white flex flex-col md:flex-row items-start gap-4 shadow-lg">
+                <span class="text-3xl">💡</span>
+                <div class="w-full">
+                    <h4 class="font-bold text-blue-400 text-sm tracking-wide uppercase mb-3">Борлуулалтыг сайжруулах зөвлөмжүүд:</h4>
+                    <div id="adviceText" class="space-y-3 text-sm text-slate-200">
+                        <!-- Dynamic List Injected Here -->
+                    </div>
+                </div>
             </div>
         </section>
 
-        <!-- SECTION 3: AUTOMATION MASTERPLAN -->
-        <section id="automation" class="space-y-12">
-            <div class="text-center">
-                <h2 class="text-4xl font-black mb-4">Борлуулалт & Халамжийн Систем</h2>
-                <p class="text-slate-500 max-w-2xl mx-auto">Яаж 3 ажилтан 150 лийдийг алдалгүй "арчлах" вэ?</p>
+        <!-- MODULE 4: GLOBAL SAAS UNIT ECONOMICS (KPI) -->
+        <section class="space-y-6">
+            <h2 class="section-title text-slate-800"><span class="text-xl">💎</span> 4. Санхүүгийн Эрүүл Мэнд (SaaS KPI)</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+                
+                <!-- LTV:CAC -->
+                <div class="kpi-card border-t-purple-500">
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="label-sm tooltip">LTV:CAC Харьцаа<span class="tooltiptext">Нэг хэрэглэгчээс олох нийт ашгийг түүнийг олсон зардалд хуваасан дүн. 3.0x-ээс дээш бол маш сайн.</span></span>
+                        <span class="badge" id="bLtvCac">N/A</span>
+                    </div>
+                    <div class="text-4xl font-black text-slate-800 tracking-tight" id="kLtvCac">0.0x</div>
+                    <div class="mt-4 pt-3 border-t border-slate-100 flex justify-between text-[10px]">
+                        <span class="text-slate-500">LTV: <b id="kLtv" class="text-slate-700">0₮</b></span>
+                        <span class="text-slate-500">CAC: <b id="kCac" class="text-slate-700">0₮</b></span>
+                    </div>
+                </div>
+
+                <!-- Churn Rate -->
+                <div class="kpi-card border-t-rose-500">
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="label-sm tooltip">Customer Churn Rate<span class="tooltiptext">Сар бүр үйлчилгээгээ цуцалж буй хэрэглэгчийн хувь. 5%-иас доош байвал сайн.</span></span>
+                        <span class="badge" id="bChurn">N/A</span>
+                    </div>
+                    <div class="text-4xl font-black text-slate-800 tracking-tight" id="kChurn">0.0%</div>
+                    <div class="mt-4 pt-3 border-t border-slate-100 flex justify-between text-[10px]">
+                        <span class="text-slate-500">Орлогын алдагдал: <b id="kLostRev" class="text-red-500">0₮/сар</b></span>
+                    </div>
+                </div>
+
+                <!-- Payback Period -->
+                <div class="kpi-card border-t-amber-500">
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="label-sm tooltip">CAC Payback Period<span class="tooltiptext">Маркетингт зарцуулсан мөнгөө хэдэн сарын дараа нөхөж ашиг руу орох хугацаа.</span></span>
+                        <span class="badge" id="bPayback">N/A</span>
+                    </div>
+                    <div class="flex items-baseline gap-1">
+                        <span class="text-4xl font-black text-slate-800 tracking-tight" id="kPayback">0.0</span>
+                        <span class="text-xs font-bold text-slate-400">Сар</span>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-100 flex justify-between text-[10px]">
+                        <span class="text-slate-500">ARPU: <b id="kArpu" class="text-slate-700">0₮</b> (Нэг хэрэглэгчийн орлого)</span>
+                    </div>
+                </div>
+
+                <!-- Win Rate & Fulfillment -->
+                <div class="kpi-card border-t-emerald-500 bg-slate-900 text-white">
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="label-sm text-slate-300">Орлогын Биелэлт</span>
+                        <span class="text-[10px] font-bold text-emerald-400">Зорилт: <span id="kTarRev">0</span></span>
+                    </div>
+                    <div class="text-4xl font-black text-white tracking-tight" id="kRevPct">0.0%</div>
+                    <div class="mt-4 pt-3 border-t border-slate-700 flex justify-between text-[10px]">
+                        <span class="text-slate-400">Бодит: <b id="kActRev" class="text-emerald-400">0₮</b></span>
+                        <span class="text-slate-400">Win Rate: <b id="kWin" class="text-white">0%</b></span>
+                    </div>
+                </div>
+
             </div>
+        </section>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <!-- Sales Funnel -->
-                <div class="bg-white p-8 rounded-3xl border border-slate-200 card-shadow flex flex-col">
-                    <h3 class="text-xl font-bold text-indigo-600 mb-6 flex items-center gap-2">
-                        <span>🔥</span> Шинэ Борлуулалт
-                    </h3>
-                    <div class="flex-grow space-y-1">
-                        <div class="step-node">
-                            <h4 class="font-bold text-sm">Lead Capture</h4>
-                            <p class="text-[11px] text-slate-500">HubSpot Форм -> Zapier</p>
-                        </div>
-                        <div class="step-node">
-                            <h4 class="font-bold text-sm">Instant Demo</h4>
-                            <p class="text-[11px] text-slate-500">Бүртгүүлмэгц мэйлээр видео очно.</p>
-                        </div>
-                        <div class="step-node">
-                            <h4 class="font-bold text-sm">Auto-Booking</h4>
-                            <p class="text-[11px] text-slate-500">Calendly-ээр цаг товлоно.</p>
-                        </div>
-                    </div>
-                    <div class="mt-6 pt-4 border-t border-slate-100 text-[10px] font-bold text-indigo-400 uppercase tracking-widest">
-                        Tools: HubSpot + Calendly
-                    </div>
-                </div>
-
-                <!-- Product Training -->
-                <div class="bg-white p-8 rounded-3xl border border-slate-200 card-shadow flex flex-col">
-                    <h3 class="text-xl font-bold text-amber-500 mb-6 flex items-center gap-2">
-                        <span>🎓</span> Сургалт (Onboarding)
-                    </h3>
-                    <div class="flex-grow space-y-1">
-                        <div class="step-node">
-                            <h4 class="font-bold text-sm">Video Walkthrough</h4>
-                            <p class="text-[11px] text-slate-500">Програм танилцуулах Loom бичлэгүүд.</p>
-                        </div>
-                        <div class="step-node">
-                            <h4 class="font-bold text-sm">AI Chatbot Support</h4>
-                            <p class="text-[11px] text-slate-500">Чатбот таны өмнөөс заавар өгнө.</p>
-                        </div>
-                        <div class="step-node">
-                            <h4 class="font-bold text-sm">Self-Serve Knowledge</h4>
-                            <p class="text-[11px] text-slate-500">Notion дээрх бүрэн зааварчилгаа.</p>
-                        </div>
-                    </div>
-                    <div class="mt-6 pt-4 border-t border-slate-100 text-[10px] font-bold text-amber-400 uppercase tracking-widest">
-                        Tools: Intercom + Loom + Notion
-                    </div>
-                </div>
-
-                <!-- Retention & Care -->
-                <div class="bg-white p-8 rounded-3xl border border-slate-200 card-shadow flex flex-col">
-                    <h3 class="text-xl font-bold text-emerald-500 mb-6 flex items-center gap-2">
-                        <span>🛡️</span> Төлөвшил (Retention)
-                    </h3>
-                    <div class="flex-grow space-y-1">
-                        <div class="step-node">
-                            <h4 class="font-bold text-sm">Lifecycle Automation</h4>
-                            <p class="text-[11px] text-slate-500">30 хоног тутамд "Халамж" мэйл.</p>
-                        </div>
-                        <div class="step-node">
-                            <h4 class="font-bold text-sm">Inactivity Alerts</h4>
-                            <p class="text-[11px] text-slate-500">Ашиглаагүй харилцагчид сануулга явуулах.</p>
-                        </div>
-                        <div class="step-node">
-                            <h4 class="font-bold text-sm">Success Consulting</h4>
-                            <p class="text-[11px] text-slate-500">Дата дээр үндэслэж зөвлөгөө өгөх.</p>
-                        </div>
-                    </div>
-                    <div class="mt-6 pt-4 border-t border-slate-100 text-[10px] font-bold text-emerald-400 uppercase tracking-widest">
-                        Tools: HubSpot CRM + Make.com
-                    </div>
-                </div>
+        <!-- MODULE 5: VISUAL CHART -->
+        <section class="glass-panel">
+            <h2 class="section-title text-slate-800"><span class="text-xl">📊</span> Юүлүүрийн Зэрэгцүүлсэн График</h2>
+            <div class="chart-container">
+                <canvas id="mainChart"></canvas>
             </div>
         </section>
 
     </main>
 
-    <footer class="py-12 text-center text-slate-400 text-sm border-t border-slate-200 bg-white">
-        © 2024 Advanced Sales Automation Strategy Dashboard
-    </footer>
-
     <script>
-        // Funnel Logic
-        const ratios = {
-            demo: 0.8,
-            test: 0.5, // 50% of demos test it
-            meet: 0.42, // roughly matches 25 from 60
-            prop: 0.4, // roughly matches 10 from 25
-            close: 0.6 // roughly matches 6 from 10
+        // Pricing & SaaS Benchmarks
+        const P = { st: 24000, sd: 33000, pr: 55000, cp: 350000 };
+        const B = { r_l: 2.5, l_d: 50.0, d_m: 40.0, m_p: 60.0, p_c: 30.0, good_ltv_cac: 3.0, good_churn: 5.0, good_payback: 12.0 };
+
+        let chart;
+
+        window.onload = () => {
+            initChart();
+            calcEngine();
         };
 
-        let funnelChart;
-        let workloadChart;
-
-        function updateFunnel() {
-            const leads = parseInt(document.getElementById('leadsInput').value) || 0;
-            
-            const demos = Math.round(leads * ratios.demo);
-            const tests = Math.round(demos * ratios.test);
-            const meets = Math.round(tests * ratios.meet);
-            const props = Math.round(meets * ratios.prop);
-            const closes = Math.round(props * ratios.close);
-
-            // Update Labels
-            document.getElementById('valDemo').innerText = demos;
-            document.getElementById('valMeet').innerText = meets;
-            document.getElementById('valClose').innerText = closes;
-
-            // Update Chart
-            funnelChart.data.datasets[0].data = [leads, demos, tests, meets, props, closes];
-            funnelChart.update();
+        // Аюулгүй текст оноох функц
+        function setText(id, text) {
+            const el = document.getElementById(id);
+            if (el) el.innerText = text;
         }
 
-        const workloadData = {
-            manual: {
-                labels: ['Нэг бүрчлэн сургах', 'Давтагдсан асуулт/Чат', 'Халамж/Retention залгах', 'Шинэ уулзалт хийх', 'Сул цаг'],
-                values: [40, 25, 20, 10, 5],
-                colors: ['#f59e0b', '#fbbf24', '#10b981', '#6366f1', '#f1f5f9'],
-                info: [
-                    { title: "🎓 Нэг бүрчлэн сургах (40%)", desc: "Шинэ хүн бүрт програмын цэс, товчлуур нэг бүрийг тайлбарлаж цагаа үрж байна." },
-                    { title: "📞 Халамж/Retention (20%)", desc: "Хуучин хэрэглэгч рүүгээ нэг бүрчлэн залгаж сануулах, ярих." },
-                    { title: "🤝 Уулзалт (10%)", desc: "Хамгийн чухалClosing хийх цаг ерөөсөө 10% л байна." }
-                ],
-                summary: "❌ <strong>ЭРСДЭЛ:</strong> Танай баг борлуулалт биш 'багш'-ийн ажил хийж байна. Ингэвэл 150 lead-ийг алдах магадлал маш өндөр.",
-                emoji: "⚠️"
-            },
-            auto: {
-                labels: ['Closing (High Value)', 'Датад суурилсан зөвлөгөө', 'Автомат сургалтын хяналт', 'Автомат халамжийн хяналт', 'Сул цаг (Scalability)'],
-                values: [45, 20, 5, 5, 25],
-                colors: ['#6366f1', '#4f46e5', '#f59e0b', '#10b981', '#f1f5f9'],
-                info: [
-                    { title: "🚀 Closing Focus (45%)", desc: "Бүх сургалт автоматаар явсан тул та зөвхөн гэрээ зурах уулзалтад төвлөрнө." },
-                    { title: "🛡️ Автомат халамж (5%)", desc: "Чатбот болон автомат мэйлүүд харилцагчийг төлөвшүүлж байдаг." },
-                    { title: "📊 Дата зөвлөгөө (20%)", desc: "Хэрэглэгчид хэрхэн илүү үр дүнтэй ажиллах талаар стратегийн зөвлөгөө өгнө." }
-                ],
-                summary: "✅ <strong>ДАВУУ ТАЛ:</strong> Програм өөрөө сургалтаа хийдэг тул борлуулалтын ажилтны бүтээмж 3-5 дахин өснө.",
-                emoji: "🚀"
-            }
-        };
-
-        function toggleWorkload() {
-            const isAuto = document.getElementById('workloadToggle').checked;
-            const mode = isAuto ? 'auto' : 'manual';
-            
-            document.getElementById('labelManual').className = isAuto ? "text-sm font-bold text-slate-400" : "text-sm font-bold text-rose-600";
-            document.getElementById('labelSystem').className = isAuto ? "text-sm font-bold text-indigo-600" : "text-sm font-bold text-slate-400";
-
-            workloadChart.data.labels = workloadData[mode].labels;
-            workloadChart.data.datasets[0].data = workloadData[mode].values;
-            workloadChart.data.datasets[0].backgroundColor = workloadData[mode].colors;
-            workloadChart.update();
-
-            updateInfo(mode);
+        // Аюулгүй HTML оноох функц
+        function setHTML(id, htmlString) {
+            const el = document.getElementById(id);
+            if (el) el.innerHTML = htmlString;
         }
 
-        function updateInfo(mode) {
-            const infoBox = document.getElementById('workloadInfo');
-            const sumBox = document.getElementById('summaryBox');
-            const sumText = document.getElementById('summaryText');
-            const sumEmoji = document.getElementById('summaryEmoji');
+        function formatM(num) { return (num/1000000).toFixed(1) + "M"; }
+        function formatCur(num) { return Math.round(num).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
 
-            infoBox.innerHTML = workloadData[mode].info.map(i => `
-                <div class="p-4 bg-slate-50 rounded-xl border border-slate-100 card-shadow transition-all hover:translate-x-1">
-                    <h5 class="font-bold text-sm text-slate-900">${i.title}</h5>
-                    <p class="text-[11px] text-slate-500 mt-1 leading-relaxed">${i.desc}</p>
-                </div>
-            `).join('');
-
-            sumText.innerHTML = workloadData[mode].summary;
-            sumEmoji.innerText = workloadData[mode].emoji;
-            sumBox.className = `mt-10 p-6 rounded-2xl border flex items-start gap-4 transition-all duration-300 ${mode === 'auto' ? 'bg-indigo-50 border-indigo-100' : 'bg-amber-50 border-amber-100'}`;
-        }
-
-        window.onload = function() {
-            // Main Funnel Chart
-            const ctx1 = document.getElementById('funnelChart').getContext('2d');
-            funnelChart = new Chart(ctx1, {
+        function initChart() {
+            const ctx = document.getElementById('mainChart').getContext('2d');
+            chart = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: ['First Call', 'Demo Sent', 'Demo Tested', 'Meet', 'Proposal', 'Close'],
-                    datasets: [{
-                        label: 'Хүмүүсийн тоо',
-                        data: [150, 120, 60, 25, 10, 6],
-                        backgroundColor: [
-                            '#c7d2fe', // light indigo
-                            '#a5b4fc',
-                            '#818cf8',
-                            '#6366f1',
-                            '#4f46e5',
-                            '#3730a3'  // dark indigo
-                        ],
-                        borderRadius: 12,
-                        barThickness: 60
-                    }]
+                    labels: ['Хандалт', 'Бүртгэл', 'Видео', 'Уулзалт', 'Санал', 'Гэрээ'],
+                    datasets: [
+                        { label: 'Төлөвлөгөө (SaaS Standard)', data: [0,0,0,0,0,0], backgroundColor: '#fcd34d', borderRadius: 6 },
+                        { label: 'Бодит Гүйцэтгэл', data: [0,0,0,0,0,0], backgroundColor: '#3b82f6', borderRadius: 6 }
+                    ]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            backgroundColor: '#1e293b',
-                            padding: 12,
-                            titleFont: { size: 14, weight: 'bold' },
-                            callbacks: {
-                                label: function(context) { return " Хүмүүсийн тоо: " + context.raw; }
-                            }
-                        }
-                    },
-                    scales: {
-                        y: { beginAtZero: true, grid: { display: false }, ticks: { font: { size: 11 } } },
-                        x: { grid: { display: false }, ticks: { font: { size: 12, weight: 'bold' } } }
-                    }
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } },
+                    scales: { y: { display: false }, x: { grid: { display: false }, ticks: { font: { weight: 'bold' } } } }
                 }
             });
+        }
 
-            // Workload Doughnut
-            const ctx2 = document.getElementById('workloadChart').getContext('2d');
-            workloadChart = new Chart(ctx2, {
-                type: 'doughnut',
-                data: {
-                    labels: workloadData.manual.labels,
-                    datasets: [{
-                        data: workloadData.manual.values,
-                        backgroundColor: workloadData.manual.colors,
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '75%',
-                    plugins: { legend: { display: false } }
+        function calcEngine() {
+            // 1. REVENUE TARGET & MIX
+            const tRev = parseFloat(document.getElementById('tRev').value) || 0;
+            const tDur = parseFloat(document.getElementById('tDur').value) || 1;
+            const tBud = parseFloat(document.getElementById('tBud').value) || 0;
+
+            let mSt = parseFloat(document.getElementById('mSt').value) || 0;
+            let mSd = parseFloat(document.getElementById('mSd').value) || 0;
+            let mPr = parseFloat(document.getElementById('mPr').value) || 0;
+            let mCp = parseFloat(document.getElementById('mCp').value) || 0;
+
+            const totM = mSt + mSd + mPr + mCp;
+            let pSt = mSt/totM, pSd = mSd/totM, pPr = mPr/totM, pCp = mCp/totM;
+            if(totM === 0) { pSt=0.25; pSd=0.25; pPr=0.25; pCp=0.25; }
+
+            setText('vSt', (pSt*100).toFixed(0) + "%");
+            setText('vSd', (pSd*100).toFixed(0) + "%");
+            setText('vPr', (pPr*100).toFixed(0) + "%");
+            setText('vCp', (pCp*100).toFixed(0) + "%");
+
+            // Target Quantities
+            const qSt = Math.ceil((tRev * pSt) / (P.st * tDur));
+            const qSd = Math.ceil((tRev * pSd) / (P.sd * tDur));
+            const qPr = Math.ceil((tRev * pPr) / (P.pr * tDur));
+            const qCp = Math.ceil((tRev * pCp) / (P.cp * tDur));
+
+            setText('qSt', qSt);
+            setText('qSd', qSd);
+            setText('qPr', qPr);
+            setText('qCp', qCp);
+
+            const tCloses = qSt + qSd + qPr + qCp;
+            setText('outTotalTarget', formatCur(tCloses));
+
+            // Reverse Funnel Math
+            const tProp = Math.round(tCloses / (B.p_c/100));
+            const tMeet = Math.round(tProp / (B.m_p/100));
+            const tDemo = Math.round(tMeet / (B.d_m/100));
+            const tLead = Math.round(tDemo / (B.l_d/100));
+            const tReach = Math.round(tLead / (B.r_l/100));
+
+            // Set Target Action Plan
+            setText('reqR', formatCur(tReach));
+            setText('reqL', formatCur(tLead));
+            setText('reqD', formatCur(tDemo));
+            setText('reqM', formatCur(tMeet));
+            setText('reqP', formatCur(tProp));
+            setText('reqC', formatCur(tCloses));
+
+            // 2. ACTUALS
+            const aR = parseInt(document.getElementById('aR').value) || 1;
+            const aL = parseInt(document.getElementById('aL').value) || 0;
+            const aD = parseInt(document.getElementById('aD').value) || 0;
+            const aM = parseInt(document.getElementById('aM').value) || 0;
+            const aP = parseInt(document.getElementById('aP').value) || 0;
+            const aC = parseInt(document.getElementById('aC').value) || 0;
+            const aS = parseFloat(document.getElementById('aS').value) || 0;
+            const aRev = parseFloat(document.getElementById('aRev').value) || 0;
+            const aPaid = parseInt(document.getElementById('aPaid').value) || 1;
+            const aLost = parseInt(document.getElementById('aLost').value) || 0;
+
+            // Update Chart
+            chart.data.datasets[0].data = [tReach, tLead, tDemo, tMeet, tProp, tCloses];
+            chart.data.datasets[1].data = [aR, aL, aD, aM, aP, aC];
+            chart.update();
+
+            // 3. BOTTLENECK DIAGNOSTICS
+            setText('fR', formatCur(aR));
+            setText('fL', formatCur(aL));
+            setText('fD', formatCur(aD));
+            setText('fM', formatCur(aM));
+            setText('fP', formatCur(aP));
+            setText('fC', formatCur(aC));
+
+            const crRL = (aL/aR*100);
+            const crLD = (aD/aL*100);
+            const crDM = (aM/aD*100);
+            const crMP = (aP/aM*100);
+            const crPC = (aC/aP*100);
+
+            let adviceList = [];
+            let isBad = false;
+
+            const evalStage = (id, actualRate, targetRate, stageName, tip) => {
+                const el = document.getElementById('fC'+id);
+                if (!el) return; // Аюулгүй шалгалт
+                
+                if(!isFinite(actualRate)) actualRate = 0;
+                
+                // .innerText ашиглахын оронд HTML-ээр шууд сольж аюулгүй болгох
+                el.innerHTML = `${actualRate.toFixed(1)}%<span class="tooltiptext">Target: ${targetRate}%</span>`;
+                
+                const diff = targetRate - actualRate; 
+                
+                if(diff > 0) {
+                    el.className = "flow-conv flow-pulse tooltip text-red-600 bg-red-50 border-red-200";
+                    isBad = true;
+                    adviceList.push(`
+                        <div class="bg-slate-800 p-3 rounded-lg border border-slate-700 flex flex-col sm:flex-row gap-3 justify-between items-start sm:items-center">
+                            <div>
+                                <span class="text-red-400 font-black uppercase text-[10px] tracking-widest bg-red-400/10 px-2 py-1 rounded inline-block mb-2">
+                                    ${stageName} (Уналт: -${diff.toFixed(1)}%)
+                                </span>
+                                <p class="text-xs text-slate-300">${tip}</p>
+                            </div>
+                        </div>
+                    `);
+                } else {
+                    el.className = "flow-conv flow-ok tooltip text-emerald-600 bg-emerald-50 border-emerald-200";
                 }
-            });
+            };
 
-            updateInfo('manual');
-            updateFunnel();
-        };
+            evalStage(1, crRL, B.r_l, "Хандалтаас Бүртгэл", "Вэбсайтын уриалга (CTA) сул байна эсвэл буруу сегментэд реклам цацагдсан байна.");
+            evalStage(2, crLD, B.l_d, "Бүртгэлээс Видео", "Бүртгүүлсэн хүмүүсийг видео руу хөтлөх имэйл (Nurturing) процесс хангалтгүй байна.");
+            evalStage(3, crDM, B.d_m, "Видеогоос Уулзалт", "Видео хэт урт, эсвэл уулзалт товлох Calendly линк тодорхойгүй байна.");
+            evalStage(4, crMP, B.m_p, "Уулзалтаас Санал", "Уулзалтын үеэр хэрэглэгчийн асуудлыг (Pain point) бүрэн оношилж, үнэ цэнийг ойлгуулж чадахгүй байна.");
+            evalStage(5, crPC, B.p_c, "Саналаас Гэрээ", "Үнийн санал зах зээлээс өндөр эсвэл борлуулалтын хаалт хийх (Follow-up) процесс сул байна.");
+
+            const advBox = document.getElementById('adviceBox');
+            if (advBox) {
+                if(adviceList.length > 0) {
+                    advBox.className = "mt-6 p-5 rounded-xl bg-slate-900 border border-slate-800 text-white flex flex-col md:flex-row items-start gap-4 shadow-lg";
+                    setHTML('adviceText', adviceList.join(''));
+                } else {
+                    advBox.className = "mt-6 p-5 rounded-xl bg-emerald-900 border border-emerald-800 text-white flex flex-col md:flex-row items-start gap-4 shadow-lg";
+                    setHTML('adviceText', `
+                        <div class="flex items-center gap-2 text-emerald-400 font-bold text-sm">Бүх үе шат төлөвлөгөөний дагуу маш сайн ажиллаж байна. Борлуулалтын урсгал хэвийн байна!</div>
+                    `);
+                }
+            }
+
+            // 4. GLOBAL SAAS UNIT ECONOMICS
+            const churnRate = (aLost / aPaid) * 100;
+            const customerLifetime = isFinite(churnRate) && churnRate > 0 ? (1 / (churnRate/100)) : 24; 
+            const arpu = aPaid > 0 ? (aRev / aPaid) : 0;
+            const lostRevenue = aLost * arpu;
+            
+            setText('kChurn', (isFinite(churnRate) ? churnRate.toFixed(1) : "0") + "%");
+            setText('kLostRev', formatCur(isFinite(lostRevenue)?lostRevenue:0) + "₮/сар");
+            setTrend('bChurn', churnRate, B.good_churn, true);
+
+            const cac = aC > 0 ? (aS / aC) : 0;
+            setText('kCac', formatCur(isFinite(cac)?cac:0) + "₮");
+
+            const ltv = arpu * customerLifetime;
+            const ltvCacRatio = cac > 0 ? (ltv / cac) : 0;
+            
+            setText('kLtv', formatCur(isFinite(ltv)?ltv:0) + "₮");
+            setText('kLtvCac', (isFinite(ltvCacRatio) ? ltvCacRatio.toFixed(1) : "0") + "x");
+            
+            const bLtv = document.getElementById('bLtvCac');
+            if (bLtv) {
+                if(!isFinite(ltvCacRatio) || ltvCacRatio == 0) { bLtv.innerText = "N/A"; bLtv.className="badge badge-neutral"; }
+                else if(ltvCacRatio >= 3) { bLtv.innerText = "Маш сайн"; bLtv.className="badge badge-good"; }
+                else if(ltvCacRatio >= 1) { bLtv.innerText = "Дундаж"; bLtv.className="badge bg-amber-100 text-amber-800"; }
+                else { bLtv.innerText = "Алдагдалтай"; bLtv.className="badge badge-bad"; }
+            }
+
+            const payback = arpu > 0 ? (cac / arpu) : 0; 
+            setText('kPayback', isFinite(payback) ? payback.toFixed(1) : "0");
+            setText('kArpu', formatCur(isFinite(arpu)?arpu:0) + "₮");
+            setTrend('bPayback', payback, B.good_payback, true);
+            
+            setText('kTarRev', formatM(tRev) + "₮");
+            const revPct = tRev > 0 ? (aRev / tRev * 100) : 0;
+            setText('kRevPct', (isFinite(revPct) ? revPct.toFixed(1) : "0") + "%");
+            setText('kActRev', formatM(aRev) + "₮");
+            
+            const winRate = aM > 0 ? (aC / aM) * 100 : 0;
+            setText('kWin', (isFinite(winRate) ? winRate.toFixed(1) : "0") + "%");
+        }
+
+        function setTrend(id, val, target, lowerIsBetter) {
+            const el = document.getElementById(id);
+            if (!el) return; // Аюулгүй шалгалт
+            if(!isFinite(val)) { el.innerText = "N/A"; el.className="badge badge-neutral"; return; }
+            let isGood = lowerIsBetter ? (val <= target) : (val >= target);
+            if(isGood) { el.innerText = "Эрүүл"; el.className = "badge badge-good"; } 
+            else { el.innerText = "Эрсдэлтэй"; el.className = "badge badge-bad"; }
+        }
     </script>
 </body>
 </html>
